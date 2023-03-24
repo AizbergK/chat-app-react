@@ -123,7 +123,7 @@ export default function Dashboard() {
   function handleMessageState(event) {
     setTextMessage(event.target.value);
 
-    // console.log("here", testMessages, activeReceiver);
+
   }
 
   function handleSubmit() {
