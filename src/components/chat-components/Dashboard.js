@@ -151,7 +151,6 @@ export default function Dashboard() {
     }
     return messages.map((messageCol) => {
       let fromReceiver = false;
-      // console.log(currentUser.uid)
       if (messageCol.sentBy === currentUser.uid) {
         fromReceiver = false;
       } else {
