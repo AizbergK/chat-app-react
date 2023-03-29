@@ -2,8 +2,11 @@ import React, { useRef, useState } from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { db } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function Signup() {
+  const usernameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmRef = useRef();
@@ -19,12 +22,32 @@ export default function Signup() {
       return setError("Passwords do not match");
     }
 
+    if(usernameRef.length < 3) {
+      return setError("Username too short")
+    }
+
+    if(/^[a-zA-Z0-9]+$/.test(usernameRef)) {
+      return setError("Username must contain only characters and numbers")
+    }
+
     try {
       setError("");
+      const username = usernameRef.current.value;
       setLoading(true);
-      await signup(emailRef.current.value, passwordRef.current.value);
+      await signup(emailRef.current.value, passwordRef.current.value)
+      .then(userData => {
+        const messagesRef = doc(db, `users`, `${userData.user.uid}`);
+    
+        setDoc(messagesRef, {
+          email: userData.user.email,
+          username: username,
+          participatingChats: [],
+        });
+        // console.log('userData', userData.user.uid, userData.user.email);
+      })
       navigate("/");
-    } catch {
+    } catch(error) {
+      console.log('error', error)
       setError("Failed to create an account");
     }
 
@@ -38,6 +61,10 @@ export default function Signup() {
           <h2 className="text-center mb-4">Sign Up</h2>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
+            <Form.Group id="username">
+              <Form.Label>Username</Form.Label>
+              <Form.Control type="input" ref={usernameRef} required />
+            </Form.Group>
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
               <Form.Control type="email" ref={emailRef} required />
